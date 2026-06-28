@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>からだ測定 × 食事チェック｜オープンキャンパス体験</title>
+<style>
+  :root{
+    --paper:#F6F5F1; --card:#FFFFFF; --ink:#1E2A2E; --ink-soft:#56635F; --ink-faint:#8A938F;
+    --line:#E4E2DA; --line-strong:#D2CFC4;
+    --food:#137A5E; --food-soft:#E4F0EA; --food-line:#BFE0D2;
+    --measure:#2C5E8A; --measure-soft:#E6EDF4; --measure-line:#C5D7E7;
+    --warm:#D45A33; --warm-soft:#FBE6DD;
+    --gold:#B68A1E;
+    --ok:#1E7A4D; --warn:#B5852A; --low:#B14A3A;
+    --r:14px; --r-sm:10px;
+    --shadow:0 1px 2px rgba(30,42,46,.05), 0 6px 20px rgba(30,42,46,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",system-ui,sans-serif;
+    line-height:1.7; -webkit-font-smoothing:antialiased; padding-bottom:108px;
+  }
+  .wrap{max-width:780px; margin:0 auto; padding:0 16px}
+  .num{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1}
+
+  /* Header */
+  header.top{padding:20px 0 10px}
+  .brandrow{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+  .eyebrow{font-size:12px; letter-spacing:.18em; color:var(--food); font-weight:800}
+  h1.title{font-size:clamp(24px,5.6vw,34px); line-height:1.2; margin:.18em 0 .1em; letter-spacing:-.01em; font-weight:800}
+  h1.title .x{color:var(--warm)}
+  .subtitle{color:var(--ink-soft); font-size:14px; margin:0}
+  .btn-reset{
+    border:1px solid var(--line-strong); background:var(--card); color:var(--ink-soft);
+    border-radius:999px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;
+  }
+  .btn-reset:hover{border-color:var(--ink-soft)}
+
+  /* Section shell */
+  section.block{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+    margin:16px 0; padding:20px; box-shadow:var(--shadow); scroll-margin-top:14px;
+  }
+  .sec-head{display:flex; align-items:flex-start; gap:12px; margin:0 0 4px}
+  .sec-no{
+    flex:none; width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
+    font-weight:800; font-size:16px; color:#fff; background:var(--food); margin-top:2px;
+  }
+  .sec-no.measure{background:var(--measure)}
+  .sec-no.result{background:var(--warm)}
+  .sec-title{font-size:20px; font-weight:800; margin:0; line-height:1.25}
+  .sec-sub{font-size:13px; color:var(--ink-soft); margin:2px 0 0}
+  .sub-h{font-size:15px; font-weight:800; margin:22px 0 6px; padding-top:16px; border-top:1px dashed var(--line); display:flex; align-items:center; gap:8px}
+  .sub-h:first-of-type{border-top:none; padding-top:0; margin-top:14px}
+  .tag{font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; letter-spacing:.02em}
+  .tag.self{background:var(--food-soft); color:var(--food)}
+  .tag.meas{background:var(--measure-soft); color:var(--measure)}
+
+  /* Calcium questions */
+  .q{padding:14px 0; border-top:1px solid var(--line)}
+  .q:first-child{border-top:none}
+  .q-head{display:flex; gap:10px; align-items:baseline; margin-bottom:8px}
+  .q-n{flex:none; font-weight:800; color:var(--food); font-size:14px; width:1.6em}
+  .q-text{font-weight:700; font-size:15px}
+  .q-hint{display:block; font-weight:400; font-size:12px; color:var(--ink-faint); margin-top:2px}
+  .opts{display:flex; flex-wrap:wrap; gap:8px; padding-left:calc(1.6em + 10px)}
+  .opt{
+    border:1.5px solid var(--line-strong); background:#fff; color:var(--ink);
+    border-radius:999px; padding:8px 14px; font-size:14px; font-weight:600; cursor:pointer;
+    transition:transform .04s ease, background .12s, border-color .12s, color .12s; min-height:40px;
+  }
+  .opt:hover{border-color:var(--food)}
+  .opt:active{transform:scale(.97)}
+  .opt[aria-pressed="true"]{background:var(--food); border-color:var(--food); color:#fff}
+  .opt .pt{font-size:11px; opacity:.7; margin-left:5px; font-variant-numeric:tabular-nums}
+  .opt[aria-pressed="true"] .pt{opacity:.85}
+
+  /* DVS grid */
+  .dvs-note{font-size:13px; color:var(--ink-soft); margin:6px 0 12px}
+  .dvs-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+  .dvs-item{
+    border:1.5px solid var(--line-strong); border-radius:var(--r-sm); padding:10px 12px;
+    display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff; min-height:54px;
+    transition:border-color .12s, background .12s;
+  }
+  .dvs-item:hover{border-color:var(--food)}
+  .dvs-item[aria-pressed="true"]{background:var(--food-soft); border-color:var(--food-line)}
+  .dvs-mn{
+    flex:none; width:30px; height:30px; border-radius:8px; display:grid; place-items:center;
+    background:#EFEDE6; color:var(--ink-soft); font-weight:800; font-size:15px;
+  }
+  .dvs-item[aria-pressed="true"] .dvs-mn{background:var(--food); color:#fff}
+  .dvs-label{flex:1; font-weight:700; font-size:14px; line-height:1.25}
+  .dvs-state{flex:none; font-size:12px; font-weight:800; color:var(--ink-faint)}
+  .dvs-item[aria-pressed="true"] .dvs-state{color:var(--food)}
+
+  /* Measurement inputs */
+  .field-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px 14px; margin-top:4px}
+  .field{display:flex; flex-direction:column; gap:5px}
+  .field.full{grid-column:1 / -1}
+  .field label{font-size:13px; font-weight:700; color:var(--ink-soft)}
+  .field .unit{color:var(--ink-faint); font-weight:600; font-size:12px}
+  .inrow{display:flex; align-items:center; gap:8px}
+  input[type="number"], input[type="text"], select{
+    width:100%; border:1.5px solid var(--line-strong); border-radius:var(--r-sm);
+    padding:11px 12px; font-size:16px; background:#fff; color:var(--ink); font-family:inherit;
+    font-variant-numeric:tabular-nums;
+  }
+  input:focus, select:focus, .opt:focus-visible, .dvs-item:focus-visible, button:focus-visible{
+    outline:3px solid rgba(44,94,138,.35); outline-offset:2px; border-color:var(--measure)
+  }
+  .seg{display:flex; gap:6px; flex-wrap:wrap}
+  .seg button{
+    border:1.5px solid var(--line-strong); background:#fff; border-radius:999px; padding:9px 16px;
+    font-size:14px; font-weight:700; cursor:pointer; color:var(--ink); font-family:inherit;
+  }
+  .seg button[aria-pressed="true"]{background:var(--measure); border-color:var(--measure); color:#fff}
+  .helper{font-size:12px; color:var(--ink-faint); margin-top:8px}
+
+  /* Sticky bar */
+  .stickybar{
+    position:fixed; left:0; right:0; bottom:0; z-index:40; background:rgba(255,255,255,.94);
+    backdrop-filter:saturate(180%) blur(8px); border-top:1px solid var(--line-strong);
+    box-shadow:0 -4px 18px rgba(30,42,46,.07);
+  }
+  .stickybar .wrap{display:flex; align-items:center; gap:12px; padding:10px 16px}
+  .live{display:flex; gap:18px; flex:1; min-width:0; flex-wrap:wrap}
+  .live .l{display:flex; flex-direction:column; line-height:1.15}
+  .live .l b{font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+  .live .l b.warm{color:var(--warm)} .live .l b.food{color:var(--food)}
+  .live .l span{font-size:11px; color:var(--ink-faint); font-weight:700}
+  .btn-primary{
+    flex:none; border:none; background:var(--warm); color:#fff; border-radius:999px;
+    padding:13px 22px; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 4px 14px rgba(212,90,51,.3);
+  }
+  .btn-primary:hover{filter:brightness(1.05)} .btn-primary:active{transform:translateY(1px)}
+  .btn-primary:disabled{background:var(--line-strong); box-shadow:none; cursor:default; color:#fff}
+
+  /* Result sheet */
+  #result{display:none}
+  #result.show{display:block}
+  .result-sheet{background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+  .rs-head{padding:18px 22px; background:linear-gradient(180deg,#fff, #FBFAF7); border-bottom:2px solid var(--food)}
+  .rs-head .who{font-size:13px; color:var(--ink-soft)}
+  .rs-title{font-size:22px; font-weight:800; margin:2px 0}
+  .rs-meta{font-size:12px; color:var(--ink-faint); margin-top:4px}
+  .rs-body{padding:20px 22px}
+
+  .big-ca{display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:4px 0 6px}
+  .big-ca .val{font-size:clamp(40px,11vw,62px); font-weight:800; line-height:1; letter-spacing:-.02em; color:var(--warm); font-variant-numeric:tabular-nums}
+  .big-ca .uu{font-size:18px; font-weight:800; color:var(--ink-soft); align-self:flex-end; margin-bottom:6px}
+  .judge{display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:999px; font-weight:800; font-size:14px}
+  .judge.ok{background:#E5F2EA; color:var(--ok)} .judge.warn{background:#F6EFD9; color:var(--warn)} .judge.low{background:#F8E7E2; color:var(--low)}
+  .meter{height:12px; border-radius:999px; background:#ECEAE2; overflow:hidden; margin:12px 0 6px; position:relative}
+  .meter > i{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--warm),#E8893A)}
+  .meter-marks{display:flex; justify-content:space-between; font-size:11px; color:var(--ink-faint); font-variant-numeric:tabular-nums}
+  .ca-comment{font-size:14px; color:var(--ink); background:var(--warm-soft); border-radius:var(--r-sm); padding:12px 14px; margin-top:12px}
+
+  .rs-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px}
+  .panel{border:1px solid var(--line); border-radius:var(--r-sm); padding:14px}
+  .panel.self{border-left:4px solid var(--food)}
+  .panel.meas{border-left:4px solid var(--measure)}
+  .panel h4{margin:0 0 8px; font-size:14px; font-weight:800; display:flex; align-items:center; gap:7px}
+  .panel h4 .dot{width:9px; height:9px; border-radius:3px}
+  .self .dot{background:var(--food)} .meas .dot{background:var(--measure)}
+  .kv{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:5px 0; border-top:1px dotted var(--line); font-size:14px}
+  .kv:first-of-type{border-top:none}
+  .kv .k{color:var(--ink-soft)}
+  .kv .v{font-weight:800; font-variant-numeric:tabular-nums; text-align:right}
+  .kv .v small{font-weight:700; color:var(--ink-faint); font-size:11px; margin-left:3px}
+  .pill{display:inline-block; font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; margin-left:6px}
+  .pill.g{background:#E5F2EA; color:var(--ok)} .pill.y{background:#F6EFD9; color:var(--warn)} .pill.r{background:#F8E7E2; color:var(--low)} .pill.n{background:#EDEBE4; color:var(--ink-soft)}
+  .dvs-result-list{font-size:12px; color:var(--ink-soft); margin-top:8px; line-height:1.5}
+  .dvs-result-list b{color:var(--food)}
+
+  /* connection diagram */
+  .link-map{margin-top:20px; border:1px solid var(--line); border-radius:var(--r-sm); padding:16px; background:#FBFAF7}
+  .link-map h4{margin:0 0 12px; font-size:14px; font-weight:800}
+  .link-row{display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:center; gap:8px; margin:9px 0; font-size:13px}
+  .chip{border-radius:999px; padding:7px 10px; font-weight:700; text-align:center; line-height:1.25}
+  .chip.eat{background:var(--food-soft); color:var(--food); border:1px solid var(--food-line)}
+  .chip.body{background:var(--measure-soft); color:var(--measure); border:1px solid var(--measure-line)}
+  .chip.out{background:var(--warm-soft); color:var(--warm); border:1px solid #F2C9B9}
+  .arrow{color:var(--ink-faint); font-weight:800; text-align:center}
+  .link-foot{font-size:11px; color:var(--ink-faint); margin-top:10px}
+
+  /* caution box */
+  .caution{margin-top:18px; border:1px solid var(--line-strong); border-radius:var(--r-sm); overflow:hidden}
+  .caution .ch{background:#33403D; color:#fff; padding:9px 14px; font-size:13px; font-weight:800; display:flex; align-items:center; gap:8px}
+  .caution ol{margin:0; padding:12px 16px 12px 32px; font-size:12.5px; color:var(--ink); line-height:1.55}
+  .caution li{margin:5px 0}
+  .caution b{color:var(--low)}
+
+  .rs-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px}
+  .btn-print{border:none; background:var(--measure); color:#fff; border-radius:999px; padding:13px 22px; font-size:15px; font-weight:800; cursor:pointer}
+  .btn-print:hover{filter:brightness(1.05)}
+  .btn-ghost{border:1.5px solid var(--line-strong); background:#fff; color:var(--ink); border-radius:999px; padding:13px 20px; font-size:14px; font-weight:700; cursor:pointer}
+
+  .source{font-size:11px; color:var(--ink-faint); line-height:1.6; margin:14px 0 8px}
+
+  /* blank printable form */
+  #blankform{display:none}
+  .bf-q{display:flex; gap:8px; padding:7px 0; border-top:1px solid #ddd; font-size:12px}
+  .bf-opts{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px}
+  .bf-opt{border:1px solid #999; border-radius:6px; padding:3px 8px; font-size:11px}
+
+  @media (max-width:560px){
+    .dvs-grid{grid-template-columns:1fr}
+    .field-grid{grid-template-columns:1fr}
+    .rs-grid{grid-template-columns:1fr}
+    .link-row{grid-template-columns:1fr; gap:4px; text-align:center}
+    .link-row .arrow{transform:rotate(90deg); margin:-2px 0}
+    .live .l b{font-size:18px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+
+  /* ---------- PRINT ---------- */
+  @media print{
+    @page{size:A4; margin:12mm}
+    body{background:#fff; padding:0}
+    header.top, .stickybar, section.block, .btn-reset, .rs-actions, .source.screen-only{display:none!important}
+    .wrap{max-width:none; padding:0}
+    #result{display:block!important}
+    .result-sheet{border:none; box-shadow:none}
+    .rs-head{border-bottom:2px solid #137A5E}
+    .panel, .link-map, .caution, .ca-comment{break-inside:avoid}
+    .big-ca .val{color:#C24A26!important; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+    *{-webkit-print-color-adjust:exact!important; print-color-adjust:exact!important}
+    body.print-blank #result{display:none!important}
+    body.print-blank #blankform{display:block!important}
+  }
+  body.print-blank{background:#fff}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brandrow">
+      <div>
+        <div class="eyebrow">OPEN CAMPUS ｜ 健康栄養学科 体験ブース</div>
+        <h1 class="title">からだ測定 <span class="x">×</span> 食事チェック</h1>
+        <p class="subtitle">食べているもの と からだ を、その場でつなげてみよう</p>
+      </div>
+      <button class="btn-reset" id="resetBtn" type="button">↺ 新しい人で始める</button>
+    </div>
+  </header>
+
+  <!-- STEP 1: 食事チェック -->
+  <section class="block" id="sec-food">
+    <div class="sec-head">
+      <div class="sec-no">1</div>
+      <div>
+        <h2 class="sec-title">食事チェック <span class="tag self">自分で回答</span></h2>
+        <p class="sec-sub">ふだんの食べ方を選ぶだけ。カルシウムの量と「食の多様性」を自動で計算します。</p>
+      </div>
+    </div>
+
+    <div class="sub-h">🥛 カルシウム自己チェック（全10問）</div>
+    <div id="caList"></div>
+
+    <div class="sub-h">🌈 食の多様性スコア（DVS）｜10食品群</div>
+    <p class="dvs-note">「<b>さ</b>かな・<b>あ</b>ぶら・<b>に</b>く・<b>ぎ</b>ゅうにゅう・<b>や</b>さい・<b>か</b>いそう・<b>い</b>も・<b>た</b>まご・<b>だ</b>いず・<b>く</b>だもの」＝「さあにぎやか（に）いただく」。<u>ほぼ毎日</u>食べているものを選んでください。</p>
+    <div class="dvs-grid" id="dvsGrid"></div>
+  </section>
+
+  <!-- STEP 2: からだの測定値 -->
+  <section class="block" id="sec-meas">
+    <div class="sec-head">
+      <div class="sec-no measure">2</div>
+      <div>
+        <h2 class="sec-title">からだの測定値 <span class="tag meas">機器で測定</span></h2>
+        <p class="sec-sub">骨密度・体組成計・ヘモグロビンの結果を入力。空欄でも結果票は作れます。</p>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label for="nick">ニックネーム（任意）</label>
+        <input type="text" id="nick" placeholder="例）にんべん">
+      </div>
+      <div class="field">
+        <label>性別（ヘモグロビンの目安に使用）</label>
+        <div class="seg" id="sexSeg">
+          <button type="button" data-sex="male" aria-pressed="false">男性</button>
+          <button type="button" data-sex="female" aria-pressed="false">女性</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-h">🦴 骨密度</div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="bdVal">測定値</label>
+        <input type="number" id="bdVal" inputmode="decimal" placeholder="例）95">
+      </div>
+      <div class="field">
+        <label for="bdType">指標の種類</label>
+        <select id="bdType">
+          <option value="yam">若年成人比 %YAM（％）</option>
+          <option value="t">T スコア</option>
+          <option value="z">Z スコア</option>
+          <option value="osi">音響的骨評価値 OSI ほか</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sub-h">⚖️ 体組成計</div>
+    <div class="field-grid">
+      <div class="field"><label for="ht">身長 <span class="unit">cm</span></label><input type="number" id="ht" inputmode="decimal" placeholder="例）168"></div>
+      <div class="field"><label for="wt">体重 <span class="unit">kg</span></label><input type="number" id="wt" inputmode="decimal" placeholder="例）60.0"></div>
+      <div class="field"><label for="bf">体脂肪率 <span class="unit">%</span></label><input type="number" id="bf" inputmode="decimal" placeholder="例）20.0"></div>
+      <div class="field"><label for="mm">筋肉量／骨格筋量 <span class="unit">kg</span></label><input type="number" id="mm" inputmode="decimal" placeholder="例）40.0"></div>
+    </div>
+
+    <div class="sub-h">🩸 ヘモグロビン</div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="hb">ヘモグロビン値 <span class="unit">g/dL</span></label>
+        <input type="number" id="hb" inputmode="decimal" placeholder="例）14.0">
+      </div>
+    </div>
+    <p class="helper">※ 機器の種類で骨密度の指標は変わります。表示された通りの数値と単位を入力してください。</p>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" aria-live="polite">
+    <div class="result-sheet">
+      <div class="rs-head">
+        <div class="who" id="rsWho">あなたの結果</div>
+        <div class="rs-title">からだ × 食事 結果票</div>
+        <div class="rs-meta" id="rsMeta"></div>
+      </div>
+      <div class="rs-body">
+
+        <h4 style="margin:0 0 4px;font-size:14px;font-weight:800;color:var(--ink-soft)">🥛 推定カルシウム摂取量（1日あたり）</h4>
+        <div class="big-ca">
+          <span class="val num" id="caMg">0</span><span class="uu">mg / 日</span>
+          <span id="caJudge" class="judge warn">—</span>
+        </div>
+        <div class="meter"><i id="caMeter" style="width:0%"></i></div>
+        <div class="meter-marks"><span>0</span><span>推奨 800mg</span><span>1480</span></div>
+        <div class="ca-comment" id="caComment"></div>
+
+        <div class="rs-grid">
+          <div class="panel self">
+            <h4><span class="dot"></span>食事から（自己回答）</h4>
+            <div class="kv"><span class="k">カルシウム点数</span><span class="v num"><span id="caScore">0</span><small>点</small></span></div>
+            <div class="kv"><span class="k">食の多様性 DVS</span><span class="v num"><span id="dvsScore">0</span><small>/ 10</small></span></div>
+            <div class="dvs-result-list" id="dvsDetail"></div>
+          </div>
+          <div class="panel meas">
+            <h4><span class="dot"></span>からだの測定値</h4>
+            <div class="kv"><span class="k">骨密度</span><span class="v" id="rBd">—</span></div>
+            <div class="kv"><span class="k">BMI</span><span class="v" id="rBmi">—</span></div>
+            <div class="kv"><span class="k">体脂肪率</span><span class="v" id="rBf">—</span></div>
+            <div class="kv"><span class="k">筋肉量</span><span class="v" id="rMm">—</span></div>
+            <div class="kv"><span class="k">ヘモグロビン</span><span class="v" id="rHb">—</span></div>
+          </div>
+        </div>
+
+        <div class="link-map">
+          <h4>🔗 食べたもの と からだ の つながり（しくみ）</h4>
+          <div class="link-row">
+            <span class="chip eat">カルシウム</span><span class="arrow">→</span>
+            <span class="chip body">骨密度</span><span class="arrow">→</span>
+            <span class="chip out">じょうぶな骨</span>
+          </div>
+          <div class="link-row">
+            <span class="chip eat">たんぱく質・多様な食品</span><span class="arrow">→</span>
+            <span class="chip body">筋肉量</span><span class="arrow">→</span>
+            <span class="chip out">動けるからだ</span>
+          </div>
+          <div class="link-row">
+            <span class="chip eat">鉄 ＋ たんぱく質・ビタミンC</span><span class="arrow">→</span>
+            <span class="chip body">ヘモグロビン</span><span class="arrow">→</span>
+            <span class="chip out">疲れにくさ</span>
+          </div>
+          <p class="link-foot">これは栄養学で知られている「しくみ（概念）」です。今日のあなたの数値どうしの因果関係を示すものではありません。</p>
+        </div>
+
+        <div class="caution">
+          <div class="ch">⚠ 読むときの大事な約束</div>
+          <ol>
+            <li>これは健康教育の<b>体験</b>で、医学的な<b>診断ではありません</b>。気になる数値は専門機関へ。</li>
+            <li>今日の<b>1回の測定</b>です。食事の点数と測定値の<b>「関連（原因と結果）」は読み取れません</b>。</li>
+            <li>DVS（食の多様性）は<b>高齢者向けに作られた指標</b>。点数は体験用で、年代別の合否基準は当てはめていません。</li>
+            <li>骨密度の判定基準は中高年の骨粗鬆症診断用。<b>高校生は骨量をいちばん貯める時期</b>で、今は数値より「貯金を増やす生活」が主役です。</li>
+            <li>体脂肪率・BMIは成長期に変わります。<b>数値に一喜一憂せず</b>、生活リズムを整えることが大切です。</li>
+          </ol>
+        </div>
+
+        <div class="rs-actions">
+          <button class="btn-print" id="printResult" type="button">🖨 結果票を印刷</button>
+          <button class="btn-ghost" id="printBlank" type="button">白紙の質問票を印刷</button>
+          <button class="btn-ghost" id="backTop" type="button">↺ 新しい人で始める</button>
+        </div>
+
+        <p class="source">
+          カルシウム自己チェック表：出典 石井光一・上西一弘, Osteoporosis Japan 13(2):497–502, 2005／公益財団法人 骨粗鬆症財団。
+          食品摂取の多様性得点（DVS）：熊谷 修ほか, 2003。本ツールは仁愛大学 健康栄養学科 オープンキャンパス体験用。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- printable blank questionnaire -->
+  <div id="blankform">
+    <h2 style="font-size:18px;margin:0 0 2px">カルシウム自己チェック表（記入用）</h2>
+    <p style="font-size:11px;color:#555;margin:0 0 8px">回答に〇 → 合計点 ×40 ＝ 1日のカルシウム量(mg)。出典：石井・上西 2005／骨粗鬆症財団</p>
+    <div id="bfCa"></div>
+    <p style="font-size:12px;margin:12px 0 2px"><b>合計　　　　点　×40 ＝　　　　　mg/日</b>　（20点以上=良い／16-19=少し不足／11-15=不足／8-10=かなり不足／0-7=全く不足）</p>
+    <h3 style="font-size:15px;margin:16px 0 4px">食の多様性（DVS）｜ほぼ毎日食べるものに〇</h3>
+    <p id="bfDvs" style="font-size:12px;line-height:2"></p>
+  </div>
+</div>
+
+<!-- sticky summary -->
+<div class="stickybar">
+  <div class="wrap">
+    <div class="live">
+      <div class="l"><b class="warm num" id="liveMg">0</b><span>カルシウム mg/日</span></div>
+      <div class="l"><b class="warm num" id="liveScore">0</b><span>カルシウム点</span></div>
+      <div class="l"><b class="food num" id="liveDvs">0</b><span>多様性 / 10</span></div>
+    </div>
+    <button class="btn-primary" id="showResult" type="button">結果票を見る →</button>
+  </div>
+</div>
+
+<script>
+/* ---------- カルシウム自己チェック表（骨粗鬆症財団 / 石井・上西 2005 配点） ---------- */
+const CA = [
+  {n:1, t:"牛乳を毎日どのくらい飲みますか？", h:"1回量：コップ1杯（160ml）",
+   o:[["ほとんど飲まない",0],["月1〜2回",0.5],["週1〜2回",1],["週3〜4回",2],["ほとんど毎日",4]]},
+  {n:2, t:"ヨーグルトをよく食べますか？", h:"1回量：1個（100g）",
+   o:[["ほとんど食べない",0],["週1〜2回",0.5],["週3〜4回",1],["ほとんど毎日",2],["毎日2個",4]]},
+  {n:3, t:"チーズ等の乳製品やスキムミルクをよく食べますか？", h:"1回量：チーズ1切(20g)／スキムミルク大さじ1.5(10g)",
+   o:[["ほとんど食べない",0],["週1〜2回",0.5],["週3〜4回",1],["ほとんど毎日",2],["2種類以上毎日",4]]},
+  {n:4, t:"大豆・納豆などの豆類をよく食べますか？", h:"1回量：納豆1パック／煮豆 小鉢1／きな粉大さじ2",
+   o:[["ほとんど食べない",0],["週1〜2回",0.5],["週3〜4回",1],["ほとんど毎日",2],["2種類以上毎日",4]]},
+  {n:5, t:"豆腐・がんも・厚揚げなどの大豆製品をよく食べますか？", h:"1回量：豆腐1/4丁／がんも小1個／厚揚げ小1枚",
+   o:[["ほとんど食べない",0],["週1〜2回",0.5],["週3〜4回",1],["ほとんど毎日",2],["2種類以上毎日",4]]},
+  {n:6, t:"ほうれん草・小松菜・チンゲン菜などの青菜をよく食べますか？", h:"1回量：お浸しで小鉢1杯",
+   o:[["ほとんど食べない",0],["週1〜2回",0.5],["週3〜4回",1],["ほとんど毎日",2],["2種類以上毎日",4]]},
+  {n:7, t:"海藻類をよく食べますか？", h:"わかめ・ひじき・のり など",
+   o:[["ほとんど食べない",0],["週1〜2回",0.5],["週3〜4回",1],["ほとんど毎日",2]]},
+  {n:8, t:"ししゃも・丸干しいわしなど骨ごと食べられる魚を食べますか？", h:"1回量：2尾",
+   o:[["ほとんど食べない",0],["月1〜2回",0.5],["週1〜2回",1],["週3〜4回",2],["ほとんど毎日",4]]},
+  {n:9, t:"しらす干し・干しエビなどの小魚を食べますか？", h:"1回量：1つかみ",
+   o:[["ほとんど食べない",0],["週1〜2回",0.5],["週3〜4回",1],["ほとんど毎日",2],["2種類以上毎日",4]]},
+  {n:10, t:"朝食・昼食・夕食と1日に3食食べますか？", h:"設問10は骨粗鬆症財団チャート準拠",
+   o:[["きちんと1日3食",3],["欠食が多い",2],["1日1〜2食",1]]},
+];
+
+/* ---------- DVS 10食品群（熊谷ら 2003）＋ さあにぎやか ---------- */
+const DVS = [
+  {mn:"さ", label:"魚介類"}, {mn:"あ", label:"油脂"}, {mn:"に", label:"肉類"},
+  {mn:"ぎ", label:"牛乳・乳製品"}, {mn:"や", label:"緑黄色野菜"}, {mn:"か", label:"海藻類"},
+  {mn:"い", label:"いも類"}, {mn:"た", label:"卵類"}, {mn:"だ", label:"大豆製品"}, {mn:"く", label:"果物"},
+];
+
+const state = { ca:{}, dvs:{}, sex:null };
+
+/* build calcium questions */
+const caList = document.getElementById('caList');
+CA.forEach(q=>{
+  const wrap = document.createElement('div'); wrap.className='q';
+  wrap.innerHTML = `<div class="q-head"><span class="q-n num">${q.n}</span>
+    <span class="q-text">${q.t}<span class="q-hint">${q.h}</span></span></div>`;
+  const opts = document.createElement('div'); opts.className='opts';
+  q.o.forEach(([label,pt])=>{
+    const b=document.createElement('button'); b.type='button'; b.className='opt';
+    b.setAttribute('aria-pressed','false');
+    b.innerHTML = `${label}<span class="pt num">${pt}</span>`;
+    b.addEventListener('click',()=>{
+      state.ca[q.n]=pt;
+      opts.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true');
+      update();
+    });
+    opts.appendChild(b);
+  });
+  wrap.appendChild(opts); caList.appendChild(wrap);
+});
+
+/* build DVS */
+const dvsGrid = document.getElementById('dvsGrid');
+DVS.forEach((d,i)=>{
+  const b=document.createElement('button'); b.type='button'; b.className='dvs-item'; b.setAttribute('aria-pressed','false');
+  b.innerHTML=`<span class="dvs-mn">${d.mn}</span><span class="dvs-label">${d.label}</span><span class="dvs-state">いいえ</span>`;
+  b.addEventListener('click',()=>{
+    const on = b.getAttribute('aria-pressed')==='true';
+    b.setAttribute('aria-pressed', on?'false':'true');
+    b.querySelector('.dvs-state').textContent = on?'いいえ':'毎日 ✓';
+    state.dvs[i]= !on; update();
+  });
+  dvsGrid.appendChild(b);
+});
+
+/* sex segment */
+document.querySelectorAll('#sexSeg button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#sexSeg button').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true'); state.sex=b.dataset.sex;
+  });
+});
+
+/* helpers */
+const num = id => { const v=parseFloat(document.getElementById(id).value); return isNaN(v)?null:v; };
+const caTotal = () => Object.values(state.ca).reduce((a,b)=>a+b,0);
+const dvsTotal = () => Object.values(state.dvs).filter(Boolean).length;
+function caBand(mg){
+  const s=caTotal();
+  if(s>=20) return {cls:'ok', t:'A 良い', c:`1日に必要な約800mg以上がとれています。この調子でバランスよく続けましょう。`};
+  if(s>=16) return {cls:'warn', t:'B 少し足りない', c:`800mgまであと一歩。乳製品や小魚・青菜をもう1品増やすと20点に届きます。`};
+  if(s>=11) return {cls:'warn', t:'C 足りない', c:`約600mg。骨がもろくなりやすい量です。あと5〜10点増やせると安心です。`};
+  if(s>=8)  return {cls:'low', t:'D かなり足りない', c:`必要量の半分以下。カルシウムの多い食品を今の2倍を目標に。`};
+  return {cls:'low', t:'E 全く足りない', c:`ほとんどとれていません。まずは毎日の牛乳・乳製品から見直してみましょう。`};
+}
+
+/* live update */
+function update(){
+  const s=caTotal(); const mg=Math.round(s*40); const dv=dvsTotal();
+  document.getElementById('liveScore').textContent=s;
+  document.getElementById('liveMg').textContent=mg;
+  document.getElementById('liveDvs').textContent=dv;
+}
+
+/* build result */
+function buildResult(){
+  const s=caTotal(); const mg=Math.round(s*40); const dv=dvsTotal();
+  const band=caBand(mg);
+
+  // header meta
+  const nick=document.getElementById('nick').value.trim();
+  document.getElementById('rsWho').textContent = nick? `${nick} さんの結果` : 'あなたの結果';
+  const d=new Date();
+  document.getElementById('rsMeta').textContent =
+    `測定日 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ・ 仁愛大学 健康栄養学科`;
+
+  // calcium
+  animateNumber(document.getElementById('caMg'), mg);
+  document.getElementById('caScore').textContent=s;
+  const meter=document.getElementById('caMeter');
+  meter.style.width = Math.min(100, mg/1480*100)+'%';
+  const jb=document.getElementById('caJudge'); jb.className='judge '+band.cls; jb.textContent=band.t;
+  document.getElementById('caComment').textContent=band.c;
+
+  // DVS
+  document.getElementById('dvsScore').textContent=dv;
+  const missing = DVS.filter((d,i)=>!state.dvs[i]).map(d=>d.label);
+  const det=document.getElementById('dvsDetail');
+  det.innerHTML = dv>=Object.keys(state.dvs).length && dv===10
+    ? `10食品群すべて毎日に近い、とても多様な食事です。`
+    : (missing.length? `毎日に近づけたい食品：<b>${missing.join('・')}</b>` : `回答を選ぶと多様性の内訳が出ます。`);
+
+  // measurements
+  setMeas(mg);
+}
+
+function setMeas(){
+  // bone density
+  const bd=num('bdVal'); const type=document.getElementById('bdType').value;
+  const unit={yam:'%YAM', t:'T', z:'Z', osi:''}[type];
+  document.getElementById('rBd').innerHTML = bd!=null ? `${bd}<small>${unit}</small>` : '—';
+
+  // BMI
+  const ht=num('ht'), wt=num('wt');
+  const bmiEl=document.getElementById('rBmi');
+  if(ht&&wt){ const bmi=wt/Math.pow(ht/100,2); bmiEl.innerHTML=`${bmi.toFixed(1)}`; }
+  else bmiEl.textContent='—';
+
+  // body fat (neutral framing, no harsh labels for minors)
+  const bf=num('bf');
+  document.getElementById('rBf').innerHTML = bf!=null? `${bf}<small>%</small>` : '—';
+
+  // muscle
+  const mm=num('mm');
+  document.getElementById('rMm').innerHTML = mm!=null? `${mm}<small>kg</small>` : '—';
+
+  // Hb with sex-based reference
+  const hb=num('hb'); const hbEl=document.getElementById('rHb');
+  if(hb!=null){
+    let pill='', label='';
+    if(state.sex==='male'){ if(hb<13){pill='y';label='低め'} else if(hb<=16.8){pill='g';label='目安内'} else {pill='n';label='高め'} }
+    else if(state.sex==='female'){ if(hb<12){pill='y';label='低め'} else if(hb<=14.8){pill='g';label='目安内'} else {pill='n';label='高め'} }
+    hbEl.innerHTML = `${hb}<small>g/dL</small>` + (label? `<span class="pill ${pill}">${label}</span>`:'');
+  } else hbEl.textContent='—';
+}
+
+/* number animation (respects reduced motion) */
+function animateNumber(el,target){
+  const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(reduce){el.textContent=target; return;}
+  const start=performance.now(), dur=700, from=parseFloat(el.textContent)||0;
+  function step(t){const p=Math.min(1,(t-start)/dur); const e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+(target-from)*e); if(p<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+}
+
+/* navigation */
+function showResult(){
+  buildResult();
+  const r=document.getElementById('result'); r.classList.add('show');
+  r.scrollIntoView({behavior:'smooth', block:'start'});
+}
+document.getElementById('showResult').addEventListener('click', showResult);
+
+function reset(){
+  state.ca={}; state.dvs={}; state.sex=null;
+  document.querySelectorAll('.opt[aria-pressed="true"]').forEach(b=>b.setAttribute('aria-pressed','false'));
+  document.querySelectorAll('.dvs-item').forEach(b=>{b.setAttribute('aria-pressed','false'); b.querySelector('.dvs-state').textContent='いいえ';});
+  document.querySelectorAll('#sexSeg button').forEach(b=>b.setAttribute('aria-pressed','false'));
+  ['nick','bdVal','ht','wt','bf','mm','hb'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('bdType').selectedIndex=0;
+  document.getElementById('result').classList.remove('show');
+  update();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('resetBtn').addEventListener('click', reset);
+document.getElementById('backTop').addEventListener('click', reset);
+
+/* printing */
+document.getElementById('printResult').addEventListener('click', ()=>{ document.body.classList.remove('print-blank'); window.print(); });
+document.getElementById('printBlank').addEventListener('click', ()=>{
+  document.body.classList.add('print-blank'); window.print();
+});
+window.addEventListener('afterprint', ()=>document.body.classList.remove('print-blank'));
+
+/* build blank printable form */
+(function(){
+  const bf=document.getElementById('bfCa');
+  CA.forEach(q=>{
+    const div=document.createElement('div'); div.className='bf-q';
+    let opts=q.o.map(([l,p])=>`<span class="bf-opt">${l}(${p})</span>`).join('');
+    div.innerHTML=`<b>${q.n}.</b><span>${q.t}<div class="bf-opts">${opts}</div></span>`;
+    bf.appendChild(div);
+  });
+  document.getElementById('bfDvs').innerHTML =
+    DVS.map(d=>`〇 ${d.mn}：${d.label}`).join('　') + '　（ほぼ毎日＝1点・合計／10）';
+})();
+
+update();
+</script>
+</body>
+</html>
